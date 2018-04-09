@@ -4,6 +4,19 @@
 #include <string.h>
 
 
+int search(int element, int *end_states, int size)
+{
+    int i = 0;
+    for (i = 0; i < size; i++)
+    {
+        if (element == end_states[i])
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int main()
 {
     int how_many_elements_in_alphabet = 0;
@@ -73,8 +86,38 @@ int main()
         strcat(prototypes, prototype);
     }
 
+    char functions[100000];
+    for (i = 0; i < how_many_states; i++)
+    {
+        sprintf(functions, "%s\nvoid e%d()\n{", functions, i);
+        int exists = search(i, end_states, how_many_end_states);
+        if (exists != -1)
+        {
+            sprintf(functions, "%s\n\tif (f[p] == 0)\n\t{\n\t\taceita();\n\t}", functions);
+        }
+        for (j = 0; j < how_many_elements_in_alphabet; j++)
+        {
+            if (transitions[i][j] != -1)
+            {
+                if (j == 0) 
+                {
+                    sprintf(functions, "%s\n\tif (f[p] == '%c')\n\t{\n\t\tp++;\n\t\te%d();\n\t}\n\t", functions, alphabet[j], transitions[i][j]);
+                }
+                else
+                {
+                    sprintf(functions, "%s\n\telse if (f[p] == '%c')\n\t{\n\t\tp++;\n\t\te%d();\n\t}\n\t", functions, alphabet[j], transitions[i][j]);
+                }
+            }
+            else
+            {
+                sprintf(functions, "%s\n\telse if (f[p] == '%c')\n\t{\n\t\trejeita();\n\t}\n\t", functions, alphabet[j]);
+            }
+        }
+        sprintf(functions, "%s\n}\n", functions);
+    }
+
     fp = fopen(filename, "w");
-    fprintf(fp, "%s\n%s\n%s\n%s\n%s", header, prototypes, accept, rejected, main_function);
+    fprintf(fp, "%s\n%s\n%s\n%s\n%s\n%s", header, prototypes, accept, rejected, main_function, functions);
     fclose(fp);
 
 
@@ -82,3 +125,4 @@ int main()
 
     return 0;
 }
+
